@@ -147,6 +147,7 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 	nicks := c.Search("nick")
 	users := c.Search("user")
 	reals := c.Search("real")
+	floods := c.Search("flood")
 	channelss := c.Search("channels")
 	moduless := c.Search("modules")
 
@@ -162,6 +163,12 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 		goto badconf
 	} else {
 		conf.Port = uint(port)
+	}
+
+	if floods == "true" {
+		conf.AllowFlood = true
+	} else {
+		conf.AllowFlood = true
 	}
 
 	if ssls == "true" {
