@@ -104,7 +104,8 @@ func NewBot(conf string) (*Bot, error) {
 func (b *Bot) Run() (err error) {
 	log.Println("connecting...")
 	if b.Conn, err = irc.Connect(b.IrcConfig); err != nil {
-		b.quit <- true
+		close(b.quit)
+		return err
 	}
 
 	for _, m := range b.Mods {
@@ -201,6 +202,8 @@ var (
 
 func main() {
 	var err error
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	flag.Parse()
 
