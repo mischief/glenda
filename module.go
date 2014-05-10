@@ -11,7 +11,10 @@ type Module interface {
 }
 
 var (
+	// available modules
 	mods = make(map[string]func() Module)
+	// loaded modules
+	loaded = make(map[string]Module)
 )
 
 // Registers a function capable of creating a new Module instance.
@@ -21,10 +24,26 @@ func RegisterModule(name string, f func() Module) {
 
 func LoadModule(name string) Module {
 	if m, ok := mods[name]; ok {
-		return m()
+		loaded[name] = m()
+		return loaded[name]
 	}
 
 	return nil
+}
+
+func GetModule(name string) Module {
+	if m, ok := loaded[name]; ok {
+		return m
+	}
+	return nil
+}
+
+func IsLoaded(name string) bool {
+	if _, ok := loaded[name]; ok {
+		return true
+	}
+
+	return false
 }
 
 func ListModules() []string {
