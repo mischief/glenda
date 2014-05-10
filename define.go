@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/kballard/goirc/irc"
-	"log"
 	"encoding/json"
 	"fmt"
+	"github.com/kballard/goirc/irc"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -32,7 +32,6 @@ type UrbanWord struct {
 	Sounds     []interface{} `json:"sounds"`
 	Tags       []string      `json:"tags"`
 }
-
 
 type DefineMod struct {
 	urlfmt string
@@ -80,7 +79,7 @@ func (d *DefineMod) define(word string) string {
 		goto bad
 	}
 
-	if(len(definition.List) > 0) {
+	if len(definition.List) > 0 {
 		return fmt.Sprintf("Definition of %s: %s", word, definition.List[0].Definition)
 	} else {
 		return fmt.Sprintf("Definition of %s not found.", word)

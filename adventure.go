@@ -1,15 +1,14 @@
-
 package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/kballard/goirc/irc"
 	"io"
 	"log"
 	"os/exec"
 	"strings"
-  "time"
-  "fmt"
+	"time"
 )
 
 func init() {
@@ -28,21 +27,26 @@ func (g *AdventureMod) Init(b *Bot, conn irc.SafeConn) error {
 	conf := b.Config.Search("mod", "adventure")
 	channel := conf.Search("channel")
 
-	if err := g.spawn(); err != nil {
-		return err
-	}
-
 	go func() {
-    time.Sleep(10 * time.Second)
+		var err error
 
-		for g.out.Scan() {
-			line := g.out.Text()
-			log.Printf("adventure: %s", line)
-			conn.Privmsg(channel, line)
-		}
+		time.Sleep(5 * time.Second)
 
-		if err := g.out.Err(); err != nil {
-			log.Printf("adventure read error: %s", err)
+		for err == nil {
+			if err = g.spawn(); err != nil {
+				log.Printf("adventure spawn error: %s", err)
+				break
+			}
+
+			for g.out.Scan() {
+				line := g.out.Text()
+				log.Printf("adventure: %s", line)
+				conn.Privmsg(channel, line)
+			}
+
+			if err := g.out.Err(); err != nil {
+				log.Printf("adventure read error: %s", err)
+			}
 		}
 	}()
 
@@ -92,9 +96,9 @@ func (g *AdventureMod) spawn() error {
 	// get rid of prompt
 	io.WriteString(g.in, "n\n")
 
-  g.out.Scan()
-  g.out.Scan()
-  g.out.Scan()
+	g.out.Scan()
+	g.out.Scan()
+	g.out.Scan()
 
 	return nil
 }
