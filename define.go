@@ -80,9 +80,9 @@ func (d *DefineMod) define(word string) string {
 	}
 
 	if len(definition.List) > 0 {
-		return fmt.Sprintf("Definition of %s: %s", word, definition.List[0].Definition)
+		return fmt.Sprintf("%s: %s", word, definition.List[0].Definition)
 	} else {
-		return fmt.Sprintf("Definition of %s not found.", word)
+		return fmt.Sprintf("%s: not found.", word)
 	}
 
 bad:
