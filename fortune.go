@@ -19,14 +19,42 @@ type FortuneMod struct {
 }
 
 func (f *FortuneMod) Init(b *Bot, conn irc.SafeConn) error {
-	f.cmd = []string{"fortune", "-e", "-a", "-s"}
+	conf := b.Config.Search("mod", "fortune")
+	theo := conf.Search("theo")
+	f.cmd = []string{"9", "fortune"}
 
 	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
 		if l.Args[1] == ".fortune" {
-			str := strings.Replace(f.fortune(), "\t", " ", -1)
-			strs := strings.Split(str, "\n")
-
+			strs := fixup(f.fortune(""))
 			log.Printf("fortune %+v", strs)
+			for _, s := range strs {
+				if l.Args[0][0] == '#' {
+					c.Privmsg(l.Args[0], s)
+				} else {
+					c.Privmsg(l.Src.String(), s)
+				}
+			}
+		}
+		if l.Args[1] == ".theo" {
+			strs := fixup(f.fortune(theo))
+			log.Printf("theo %+v", strs)
+			for _, s := range strs {
+				if l.Args[0][0] == '#' {
+					c.Privmsg(l.Args[0], s)
+				} else {
+					c.Privmsg(l.Src.String(), s)
+				}
+			}
+		}
+		if l.Args[1] == ".bullshit" {
+			var strs []string
+			out, err := exec.Command("9", "bullshit").CombinedOutput()
+			if err != nil {
+				strs = []string{err.Error()}
+			} else {
+				strs = fixup(string(out))
+			}
+			log.Printf("bullshit %+v", strs)
 			for _, s := range strs {
 				if l.Args[0][0] == '#' {
 					c.Privmsg(l.Args[0], s)
@@ -41,8 +69,13 @@ func (f *FortuneMod) Init(b *Bot, conn irc.SafeConn) error {
 	return nil
 }
 
-func (f *FortuneMod) fortune() string {
-	c := exec.Command(f.cmd[0], f.cmd[1:]...)
+func (f *FortuneMod) fortune(file string) string {
+	cmd := f.cmd
+
+	if file != "" {
+		cmd = append(cmd, file)
+	}
+	c := exec.Command(cmd[0], cmd[1:]...)
 
 	out, err := c.CombinedOutput()
 
@@ -59,4 +92,11 @@ func (m *FortuneMod) Reload() error {
 
 func (m *FortuneMod) Call(args ...string) error {
 	return nil
+}
+
+func fixup(f string) []string {
+	str := strings.Replace(f, "\t", " ", -1)
+	strs := strings.Split(str, "\n")
+
+	return strs
 }
