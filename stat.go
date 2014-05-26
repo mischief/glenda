@@ -8,6 +8,7 @@ import (
 
 	"log"
 
+	"time"
 	"bufio"
 	"strings"
 	"unicode/utf8"
@@ -26,11 +27,13 @@ var (
 				id INTEGER PRIMARY KEY autoincrement,
 				ident TEXT,
 
-				chars INTEGER,
-				words INTEGER,
-				sentences INTEGER,
-				actions INTEGER,
-				lines INTEGER
+				chars     INTEGER DEFAULT 0,
+				words     INTEGER DEFAULT 0,
+				sentences INTEGER DEFAULT 0,
+				actions   INTEGER DEFAULT 0,
+				lines     INTEGER DEFAULT 1,
+				last      INTEGER NOT NULL,
+				active    DECIMAL NOT NULL
 			)`,
 	}
 )
@@ -129,7 +132,9 @@ func (m *StatMod) action (ident string) error {
 		UPDATE
 			Stat
 		SET
-			actions = actions + 1
+			actions = actions + 1,
+			lines = lines + 1,
+			active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
 		WHERE
 			ident = ?`,
 		ident,
@@ -148,9 +153,9 @@ func (m *StatMod) action (ident string) error {
 	if n < 1 {
 		_, err = m.db.Exec(`
 			INSERT INTO
-				Stat (id, ident, chars, words, sentences, actions, lines)
+				Stat (id, ident, actions, lines, last, active)
 			VALUES
-				(null, ?, 0, 0, 0, 1, 0)
+				(null, ?, 1, 1, strftime('%s', 'now', 'localtime'), strftime('%H', 'now', 'localtime'))
 			`,
 			ident,
 		)
@@ -176,7 +181,9 @@ func (m *StatMod) update (ident, message string) error {
 			chars = chars + ?,
 			words = words + ?,
 			sentences = sentences + ?,
-			lines = lines + 1
+			lines = lines + 1,
+			last = strftime('%s', 'now'),
+			active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
 		WHERE
 			ident = ?`,
 		chars,
@@ -198,9 +205,9 @@ func (m *StatMod) update (ident, message string) error {
 	if n < 1 {
 		_, err = m.db.Exec(`
 			INSERT INTO
-				Stat (id, ident, chars, words, sentences, actions, lines)
+				Stat (id, ident, chars, words, sentences, lines, last, active)
 			VALUES
-				(null, ?, ?, ?, ?, 0, 1)`,
+				(null, ?, ?, ?, ?, 1, strftime('%s', 'now', 'localtime'), strftime('%H', 'now', 'localtime'))`,
 			ident, chars, words, sentences,
 		)
 
@@ -271,27 +278,35 @@ func Nsentences (text string) int64 {
 type Stat struct {
 	Ident string
 	Chars, Words, Sentences, Actions, Lines int64
+	Last time.Time
+	Active int64
 }
 
 func (s Stat) String () string {
-	return fmt.Sprintf("%s - %d chars, %d words, %d sentences, %d actions, %d lines",
+	return fmt.Sprintf(
+		"%s - %d chars, %d words, %d sentences, %d actions, %d lines, " +
+		"last message at %v, most active at %02d00",
 		s.Ident, s.Chars, s.Words, s.Sentences, s.Actions, s.Lines,
+		s.Last, s.Active,
 	)
 }
 
 func (m *StatMod) stat (ident string) (*Stat, error) {
-	var s Stat
+	var (
+		s Stat
+		last int64
+	)
 
 	err := m.db.QueryRow(`
 		SELECT
-			chars, words, sentences, actions, lines
+			chars, words, sentences, actions, lines, last, CAST(active AS INTEGER)
 		FROM
 			Stat
 		WHERE
 			ident = ?`,
 		ident,
 	).Scan(
-		&s.Chars, &s.Words, &s.Sentences, &s.Actions, &s.Lines,
+		&s.Chars, &s.Words, &s.Sentences, &s.Actions, &s.Lines, &last, &s.Active,
 	)
 
 	if err != nil {
@@ -301,6 +316,8 @@ func (m *StatMod) stat (ident string) (*Stat, error) {
 		return nil, err
 	}
 	
+	s.Last = time.Unix(last, 0)
+
 	s.Ident = ident
 
 	return &s, nil
