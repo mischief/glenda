@@ -32,9 +32,38 @@ var (
 				sentences INTEGER DEFAULT 0,
 				actions   INTEGER DEFAULT 0,
 				lines     INTEGER DEFAULT 1,
-				last      INTEGER NOT NULL,
-				active    DECIMAL NOT NULL
+				last      INTEGER,
+				active    DECIMAL
 			)`,
+
+		`CREATE TRIGGER IF NOT EXISTS
+			Increment
+		AFTER UPDATE ON
+			Stat
+		BEGIN
+			UPDATE
+				Stat
+			SET
+				lines = lines + 1,
+				last = strftime('%s', 'now'),
+				active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
+			WHERE
+				id = new.id;
+		END`,
+
+		`CREATE TRIGGER IF NOT EXISTS
+			Defaults
+		AFTER INSERT ON
+			Stat
+		BEGIN
+			UPDATE
+				Stat
+			SET
+				last = strftime('%s', 'now', 'localtime'),
+				active = strftime('%H', 'now', 'localtime')
+			WHERE
+				id = new.id;
+		END`,
 	}
 )
 
@@ -132,9 +161,7 @@ func (m *StatMod) action (ident string) error {
 		UPDATE
 			Stat
 		SET
-			actions = actions + 1,
-			lines = lines + 1,
-			active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
+			actions = actions + 1
 		WHERE
 			ident = ?`,
 		ident,
@@ -153,10 +180,8 @@ func (m *StatMod) action (ident string) error {
 	if n < 1 {
 		_, err = m.db.Exec(`
 			INSERT INTO
-				Stat (id, ident, actions, lines, last, active)
-			VALUES
-				(null, ?, 1, 1, strftime('%s', 'now', 'localtime'), strftime('%H', 'now', 'localtime'))
-			`,
+				Stat (ident, actions)
+			VALUES (?, 1)`,
 			ident,
 		)
 
@@ -180,10 +205,7 @@ func (m *StatMod) update (ident, message string) error {
 		SET
 			chars = chars + ?,
 			words = words + ?,
-			sentences = sentences + ?,
-			lines = lines + 1,
-			last = strftime('%s', 'now'),
-			active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
+			sentences = sentences + ?
 		WHERE
 			ident = ?`,
 		chars,
@@ -205,9 +227,8 @@ func (m *StatMod) update (ident, message string) error {
 	if n < 1 {
 		_, err = m.db.Exec(`
 			INSERT INTO
-				Stat (id, ident, chars, words, sentences, lines, last, active)
-			VALUES
-				(null, ?, ?, ?, ?, 1, strftime('%s', 'now', 'localtime'), strftime('%H', 'now', 'localtime'))`,
+				Stat (ident, chars, words, sentences)
+			VALUES (?, ?, ?, ?)`,
 			ident, chars, words, sentences,
 		)
 
