@@ -8,6 +8,7 @@ import (
 
 	"log"
 
+	"time"
 	"bufio"
 	"strings"
 	"unicode/utf8"
@@ -19,18 +20,52 @@ type StatMod struct {
 	db *sql.DB
 }
 
-var tables = []string{
-	`CREATE TABLE IF NOT EXISTS
-		Stat (
-			id INTEGER PRIMARY KEY autoincrement,
-			ident TEXT,
+var (
+	tables = []string{
+		`CREATE TABLE IF NOT EXISTS
+			Stat (
+				id INTEGER PRIMARY KEY autoincrement,
+				ident TEXT,
 
-			chars INTEGER,
-			words INTEGER,
-			sentences INTEGER,
-			lines INTEGER
-		)`,
-}
+				chars     INTEGER DEFAULT 0,
+				words     INTEGER DEFAULT 0,
+				sentences INTEGER DEFAULT 0,
+				actions   INTEGER DEFAULT 0,
+				lines     INTEGER DEFAULT 1,
+				last      INTEGER,
+				active    DECIMAL
+			)`,
+
+		`CREATE TRIGGER IF NOT EXISTS
+			Increment
+		AFTER UPDATE ON
+			Stat
+		BEGIN
+			UPDATE
+				Stat
+			SET
+				lines = lines + 1,
+				last = strftime('%s', 'now'),
+				active = active + (strftime('%H', 'now', 'localtime') - active) / (lines + 1)
+			WHERE
+				id = new.id;
+		END`,
+
+		`CREATE TRIGGER IF NOT EXISTS
+			Defaults
+		AFTER INSERT ON
+			Stat
+		BEGIN
+			UPDATE
+				Stat
+			SET
+				last = strftime('%s', 'now', 'localtime'),
+				active = strftime('%H', 'now', 'localtime')
+			WHERE
+				id = new.id;
+		END`,
+	}
+)
 
 func init () {
 	RegisterModule("stat", func () Module {
@@ -60,42 +95,52 @@ func (m *StatMod) Init (b *Bot, conn irc.SafeConn) (err error) {
 	conn.AddHandler("PRIVMSG", func (c *irc.Conn, l irc.Line) {
 		args := strings.Split(l.Args[1], " ")
 
-		if len(args) >= 1 && args[0] == ".stat" {
+		if len(args) >= 1 {
+			if args[0] == ".stat" {
 
-			var recipient string
+				var recipient string
 
-			if l.Args[0][0] == '#'{
-				recipient = l.Args[0]
-			} else {
-				recipient = l.Src.String()
-			}
-
-			if len(args) >= 2 {
-				s, err := m.stat(args[1])
-
-				if err != nil {
-					log.Printf("stat failed for %q: %s", args[1], err)
-					return
+				if l.Args[0][0] == '#'{
+					recipient = l.Args[0]
+				} else {
+					recipient = l.Src.String()
 				}
 
-				if s == nil {
-					c.Privmsg(recipient, `no such user: "` + args[1] + `"`)
-					return
+				if len(args) >= 2 {
+					s, err := m.stat(args[1])
+
+					if err != nil {
+						log.Printf("stat failed for %q: %s", args[1], err)
+						return
+					}
+
+					if s == nil {
+						c.Privmsg(recipient, `no such user: "` + args[1] + `"`)
+						return
+					}
+					
+					c.Privmsg(recipient, s.String())
+				} else {
+					c.Privmsg(recipient, "missing argument")
 				}
-				
-				c.Privmsg(recipient, s.String())
 			} else {
-				c.Privmsg(recipient, "missing argument")
+				if err := m.update(l.Src.String(), l.Args[1]); err != nil {
+					log.Printf("update failed for %q, %q: %s",
+						l.Src.String(),
+						l.Args[1:],
+						err,
+					)
+				}
 			}
-			
-		} else {
-			if err := m.update(l.Src.String(), l.Args[1]); err != nil {
-				log.Printf("update failed for %q, %q: %s",
-					l.Src.String(),
-					l.Args[1:],
-					err,
-				)
-			}
+		}
+	})
+
+	conn.AddHandler(irc.ACTION, func (c *irc.Conn, l irc.Line) {
+		if err := m.action(l.Src.String()); err != nil {
+			log.Printf("action update failed for %q: %s",
+				l.Src.String(),
+				err,
+			)
 		}
 	})
 
@@ -111,6 +156,43 @@ func (m *StatMod) Call (args ...string) error {
 	return nil
 }
 
+func (m *StatMod) action (ident string) error {
+	res, err := m.db.Exec(`
+		UPDATE
+			Stat
+		SET
+			actions = actions + 1
+		WHERE
+			ident = ?`,
+		ident,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected();
+
+	if err != nil {
+		return err
+	}
+
+	if n < 1 {
+		_, err = m.db.Exec(`
+			INSERT INTO
+				Stat (ident, actions)
+			VALUES (?, 1)`,
+			ident,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *StatMod) update (ident, message string) error {
 	
 	chars := len(message)
@@ -123,8 +205,7 @@ func (m *StatMod) update (ident, message string) error {
 		SET
 			chars = chars + ?,
 			words = words + ?,
-			sentences = sentences + ?,
-			lines = lines + 1
+			sentences = sentences + ?
 		WHERE
 			ident = ?`,
 		chars,
@@ -137,13 +218,17 @@ func (m *StatMod) update (ident, message string) error {
 		return err
 	}
 
-	if n, err := res.RowsAffected(); n < 1 {
+	n, err := res.RowsAffected();
+
+	if err != nil {
+		return err
+	}
+
+	if n < 1 {
 		_, err = m.db.Exec(`
 			INSERT INTO
-				Stat (id, ident, chars, words, sentences, lines)
-			VALUES (
-				null, ?, ?, ?, ?, 1
-			)`,
+				Stat (ident, chars, words, sentences)
+			VALUES (?, ?, ?, ?)`,
 			ident, chars, words, sentences,
 		)
 
@@ -151,6 +236,7 @@ func (m *StatMod) update (ident, message string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -212,28 +298,36 @@ func Nsentences (text string) int64 {
 
 type Stat struct {
 	Ident string
-	Chars, Words, Sentences, Lines int64
+	Chars, Words, Sentences, Actions, Lines int64
+	Last time.Time
+	Active int64
 }
 
 func (s Stat) String () string {
-	return fmt.Sprintf("%s - %d chars, %d words, %d sentences, %d lines",
-		s.Ident, s.Chars, s.Words, s.Sentences, s.Lines,
+	return fmt.Sprintf(
+		"%s - %d chars, %d words, %d sentences, %d actions, %d lines, " +
+		"last message at %v, most active at %02d00",
+		s.Ident, s.Chars, s.Words, s.Sentences, s.Actions, s.Lines,
+		s.Last, s.Active,
 	)
 }
 
 func (m *StatMod) stat (ident string) (*Stat, error) {
-	var s Stat
+	var (
+		s Stat
+		last int64
+	)
 
 	err := m.db.QueryRow(`
 		SELECT
-			chars, words, sentences, lines
+			chars, words, sentences, actions, lines, last, CAST(active AS INTEGER)
 		FROM
 			Stat
 		WHERE
 			ident = ?`,
 		ident,
 	).Scan(
-		&s.Chars, &s.Words, &s.Sentences, &s.Lines,
+		&s.Chars, &s.Words, &s.Sentences, &s.Actions, &s.Lines, &last, &s.Active,
 	)
 
 	if err != nil {
@@ -243,6 +337,8 @@ func (m *StatMod) stat (ident string) (*Stat, error) {
 		return nil, err
 	}
 	
+	s.Last = time.Unix(last, 0)
+
 	s.Ident = ident
 
 	return &s, nil
