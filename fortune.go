@@ -65,7 +65,7 @@ func (f *FortuneMod) Init(b *Bot, conn irc.SafeConn) error {
 		}
 	})
 
-	log.Printf("forutne module initialized with cmd %s", strings.Join(f.cmd, " "))
+	log.Printf("fortune module initialized with cmd %s", strings.Join(f.cmd, " "))
 	return nil
 }
 
