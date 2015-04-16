@@ -23,46 +23,40 @@ func (f *FortuneMod) Init(b *Bot, conn irc.SafeConn) error {
 	theo := conf.Search("theo")
 	f.cmd = []string{"9", "fortune"}
 
-	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-		if l.Args[1] == ".fortune" {
-			strs := fixup(f.fortune(""))
-			log.Printf("fortune %+v", strs)
-			for _, s := range strs {
-				if l.Args[0][0] == '#' {
-					c.Privmsg(l.Args[0], s)
-				} else {
-					c.Privmsg(l.Src.String(), s)
-				}
-			}
+	b.Hook("fortune", func(b *Bot, sender, cmd string, args ...string) error {
+		strs := fixup(f.fortune(""))
+		log.Printf("fortune %+v", strs)
+		for _, s := range strs {
+			b.Conn.Privmsg(sender, s)
 		}
-		if l.Args[1] == ".theo" {
-			strs := fixup(f.fortune(theo))
-			log.Printf("theo %+v", strs)
-			for _, s := range strs {
-				if l.Args[0][0] == '#' {
-					c.Privmsg(l.Args[0], s)
-				} else {
-					c.Privmsg(l.Src.String(), s)
-				}
-			}
+
+		return nil
+	})
+
+	b.Hook("theo", func(b *Bot, sender, cmd string, args ...string) error {
+		strs := fixup(f.fortune(theo))
+		log.Printf("theo %+v", strs)
+		for _, s := range strs {
+			b.Conn.Privmsg(sender, s)
 		}
-		if l.Args[1] == ".bullshit" {
-			var strs []string
-			out, err := exec.Command("9", "bullshit").CombinedOutput()
-			if err != nil {
-				strs = []string{err.Error()}
-			} else {
-				strs = fixup(string(out))
-			}
-			log.Printf("bullshit %+v", strs)
-			for _, s := range strs {
-				if l.Args[0][0] == '#' {
-					c.Privmsg(l.Args[0], s)
-				} else {
-					c.Privmsg(l.Src.String(), s)
-				}
-			}
+
+		return nil
+	})
+
+	b.Hook("theo", func(b *Bot, sender, cmd string, args ...string) error {
+		var strs []string
+		out, err := exec.Command("9", "bullshit").CombinedOutput()
+		if err != nil {
+			strs = []string{err.Error()}
+		} else {
+			strs = fixup(string(out))
 		}
+		log.Printf("bullshit %+v", strs)
+		for _, s := range strs {
+			b.Conn.Privmsg(sender, s)
+		}
+
+		return nil
 	})
 
 	log.Printf("fortune module initialized with cmd %s", strings.Join(f.cmd, " "))

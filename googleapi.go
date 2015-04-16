@@ -32,24 +32,7 @@ func (g *GoogleApiMod) Init(b *Bot, conn irc.SafeConn) error {
 	g.config.ClientSecret = conf.Search("clientsecret")
 	g.config.Scope = urlshortener.UrlshortenerScope
 
-	/*
-		conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-			args := strings.Split(l.Args[1], " ")
-			if args[0] == ".geo" {
-				ip := strings.Join(args[1:], "")
-				loc := g.geo(ip)
-
-				if l.Args[0][0] == '#' {
-					c.Privmsg(l.Args[0], loc)
-				} else {
-					c.Privmsg(l.Src.String(), loc)
-				}
-			}
-		})
-	*/
-
 	log.Printf("googleapi module initialized")
-
 	return nil
 }
 

@@ -34,24 +34,13 @@ type UrbanWord struct {
 }
 
 type DefineMod struct {
-	urlfmt string
 }
 
 func (d *DefineMod) Init(b *Bot, conn irc.SafeConn) error {
-	d.urlfmt = "http://api.urbandictionary.com/v0/define?term=%s"
 
-	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-		args := strings.Split(l.Args[1], " ")
-		if args[0] == ".define" {
-			word := strings.Join(args[1:], "")
-			definition := d.define(word)
-
-			if l.Args[0][0] == '#' {
-				c.Privmsg(l.Args[0], definition)
-			} else {
-				c.Privmsg(l.Src.String(), definition)
-			}
-		}
+	b.Hook("define", func(b *Bot, sender, cmd string, args ...string) error {
+		b.Conn.Privmsg(sender, d.define(strings.Join(args, " ")))
+		return nil
 	})
 
 	log.Printf("define module initialized with cmd define")
@@ -62,7 +51,7 @@ func (d *DefineMod) define(word string) string {
 	var definition UrbanWord
 	var body []byte
 
-	url := fmt.Sprintf(d.urlfmt, word)
+	url := fmt.Sprintf("http://api.urbandictionary.com/v0/define?term=%s", word)
 
 	resp, err := http.Get(url)
 	if err != nil {

@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kballard/goirc/irc"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+
+	"github.com/kballard/goirc/irc"
 )
 
 func init() {
@@ -40,22 +40,16 @@ type GeoipMod struct {
 func (g *GeoipMod) Init(b *Bot, conn irc.SafeConn) error {
 	g.urlfmt = "http://freegeoip.net/%s/%s"
 
-	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-		args := strings.Split(l.Args[1], " ")
-		if args[0] == ".geo" {
-			ip := strings.Join(args[1:], "")
-			loc := g.geo(ip)
-
-			if l.Args[0][0] == '#' {
-				c.Privmsg(l.Args[0], loc)
-			} else {
-				c.Privmsg(l.Src.String(), loc)
-			}
+	b.Hook("geo", func(b *Bot, sender, cmd string, args ...string) error {
+		if len(args) != 1 {
+			return nil
 		}
+
+		b.Conn.Privmsg(sender, g.geo(args[0]))
+		return nil
 	})
 
 	log.Printf("geoip module initialized with urlfmt %s", g.urlfmt)
-
 	return nil
 }
 

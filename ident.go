@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kballard/goirc/irc"
 	"log"
+	"time"
 )
 
 func init() {
@@ -30,7 +31,15 @@ func (i *IdentMod) Init(b *Bot, conn irc.SafeConn) (err error) {
 	}
 
 	conn.AddHandler(irc.CONNECTED, func(c *irc.Conn, l irc.Line) {
-		c.Privmsg("nickserv", fmt.Sprintf("identify %s %s", i.nick, i.pass))
+		go func() {
+			// curse you freenode NickServ..
+			time.Sleep(2 * time.Second)
+			c.Privmsg("nickserv", fmt.Sprintf("identify %s %s", i.nick, i.pass))
+			log.Printf("ident: identified")
+			time.Sleep(2 * time.Second)
+			c.Privmsg("nickserv", fmt.Sprintf("regain %s", i.nick))
+			log.Printf("ident: regained")
+		}()
 	})
 
 	return nil

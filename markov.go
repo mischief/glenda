@@ -52,20 +52,19 @@ func (m *MarkovMod) Init(b *Bot, conn irc.SafeConn) error {
 		}
 	}
 
-	log.Printf("markov module initialized with order %d nword %d corpus %s", order, nword, corpus)
-
-	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-		if l.Args[1] == ".markov" {
-			if l.Args[0][0] == '#' {
-				c.Privmsg(l.Args[0], m.chain.Generate(nword))
-			} else {
-				c.Privmsg(l.Src.String(), m.chain.Generate(nword))
-			}
-		} else {
-			m.chain.Build(strings.NewReader(l.Args[1]))
-		}
+	b.Hook("markov", func(b *Bot, sender, cmd string, args ...string) error {
+		b.Conn.Privmsg(sender, m.chain.Generate(nword))
+		return nil
 	})
 
+	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
+		if strings.HasPrefix(l.Args[0], b.Magic) {
+			return
+		}
+		m.chain.Build(strings.NewReader(l.Args[1]))
+	})
+
+	log.Printf("markov module initialized with order %d nword %d corpus %s", order, nword, corpus)
 	return nil
 }
 

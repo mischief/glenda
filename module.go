@@ -54,3 +54,24 @@ func ListModules() []string {
 
 	return out
 }
+
+func init() {
+	RegisterModule("module", func() Module {
+		return &ModMod{}
+	})
+}
+
+type ModMod struct {
+}
+
+func (m *ModMod) Init(b *Bot, conn irc.SafeConn) error {
+	return nil
+}
+
+func (m *ModMod) Reload() error {
+	return nil
+}
+
+func (m *ModMod) Call(args ...string) error {
+	return nil
+}

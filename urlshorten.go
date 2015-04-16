@@ -2,10 +2,10 @@ package main
 
 import (
 	urlshortener "code.google.com/p/google-api-go-client/urlshortener/v1"
+	"fmt"
 	"github.com/kballard/goirc/irc"
 	"log"
 	"net/http"
-	"strings"
 )
 
 func init() {
@@ -24,25 +24,17 @@ func (u *UrlShortenerMod) Init(b *Bot, conn irc.SafeConn) (err error) {
 		return
 	}
 
-	conn.AddHandler("PRIVMSG", func(c *irc.Conn, l irc.Line) {
-		args := strings.Split(l.Args[1], " ")
-		if args[0] == ".short" {
-			if len(args) < 2 {
-				return
-			}
-			url := args[1]
-			short, err := u.shorten(url)
-
-			if err != nil {
-				short = err.Error()
-			}
-
-			if l.Args[0][0] == '#' {
-				c.Privmsg(l.Args[0], short)
-			} else {
-				c.Privmsg(l.Src.String(), short)
-			}
+	b.Hook("short", func(b *Bot, sender, cmd string, args ...string) error {
+		if len(args) < 1 {
+			return fmt.Errorf("missing argument")
 		}
+		short, err := u.shorten(args[0])
+		if err != nil {
+			return err
+		}
+
+		b.Conn.Privmsg(sender, short)
+		return nil
 	})
 
 	log.Printf("urlshortener module initialized")

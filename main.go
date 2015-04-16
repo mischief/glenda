@@ -4,18 +4,21 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/kballard/goirc/irc"
-	"github.com/mischief/ndb"
 	"log"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kballard/goirc/irc"
+	"github.com/mischief/ndb"
 )
 
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
+
+type HookFn func(b *Bot, sender, cmd string, args ...string) error
 
 type Bot struct {
 	Channels  []string
@@ -23,10 +26,13 @@ type Bot struct {
 	Conn      irc.SafeConn
 	IrcConfig irc.Config
 	Mods      map[string]Module
+	Magic     string
 
 	LoginFn   func(conn *irc.Conn, line irc.Line)
 	PrivmsgFn func(conn *irc.Conn, line irc.Line)
 	ActionFn  func(conn *irc.Conn, line irc.Line)
+
+	hooks map[string]HookFn
 
 	quit chan bool
 }
@@ -45,17 +51,53 @@ func NewBot(conf string) (*Bot, error) {
 		}
 	}
 
-	bot.PrivmsgFn = func(conn *irc.Conn, line irc.Line) {
-		log.Printf("[%s] %s> %s\n", line.Args[0], line.Src, line.Args[1])
-		if line.Args[1] == ".quit" {
-			conn.Quit("quit")
+	bot.PrivmsgFn = func(conn *irc.Conn, l irc.Line) {
+		log.Printf("[%s] %s> %s\n", l.Args[0], l.Src, l.Args[1])
+		/*
+			if l.Args[1] == ".quit" {
+				conn.Quit("quit")
+				return
+			}
+		*/
+
+		args := strings.Split(l.Args[1], " ")
+		cmd := args[0]
+
+		args = args[1:]
+
+		if cmd == "" {
 			return
+		}
+
+		if !strings.HasPrefix(cmd, bot.Magic) {
+			return
+		}
+
+		cmd = strings.TrimPrefix(cmd, bot.Magic)
+
+		hk, ok := bot.hooks[cmd]
+		if !ok {
+			return
+		}
+
+		var sender string
+
+		if l.Args[0][0] == '#' {
+			sender = l.Args[0]
+		} else {
+			sender = l.Src.String()
+		}
+
+		if err := hk(bot, sender, cmd, args...); err != nil {
+			bot.Conn.Privmsg(sender, err.Error())
 		}
 	}
 
 	bot.ActionFn = func(conn *irc.Conn, line irc.Line) {
 		log.Printf("[%s] %s %s\n", line.Dst, line.Src, line.Args[0])
 	}
+
+	bot.hooks = make(map[string]HookFn)
 
 	config, err := ndb.Open(conf)
 	if err != nil {
@@ -151,6 +193,7 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 	floods := c.Search("flood")
 	channelss := c.Search("channels")
 	moduless := c.Search("modules")
+	magics := c.Search("magic")
 
 	conf := irc.Config{
 		Host:      hosts,
@@ -190,10 +233,25 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 		}
 	}
 
+	if magics != "" {
+		b.Magic = magics
+	} else {
+		b.Magic = "."
+	}
+
 	return conf, nil
 badconf:
 
 	return conf, fmt.Errorf("config error: %s", err)
+}
+
+func (b *Bot) Hook(cmd string, hook HookFn) error {
+	if _, ok := b.hooks[cmd]; ok {
+		return fmt.Errorf("hook for %q already exists", cmd)
+	}
+
+	b.hooks[cmd] = hook
+	return nil
 }
 
 var (

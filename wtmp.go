@@ -49,7 +49,7 @@ func wtmp(path string) ([]WtmpEntry, error) {
 		line := make([]byte, 8)
 		name := make([]byte, 32)
 		host := make([]byte, 256)
-		var date int32
+		var date int64
 
 		if _, err = io.ReadFull(br, line); err != nil {
 			break
@@ -68,7 +68,7 @@ func wtmp(path string) ([]WtmpEntry, error) {
 			line: string(bytes.TrimRight(line, "\x00")),
 			name: string(bytes.TrimRight(name, "\x00")),
 			host: string(bytes.TrimRight(host, "\x00")),
-			date: time.Unix(int64(date), 0),
+			date: time.Unix(date, 0),
 		}
 
 		ent = append(ent, entry)
