@@ -43,7 +43,7 @@ func (f *FortuneMod) Init(b *Bot, conn irc.SafeConn) error {
 		return nil
 	})
 
-	b.Hook("theo", func(b *Bot, sender, cmd string, args ...string) error {
+	b.Hook("bullshit", func(b *Bot, sender, cmd string, args ...string) error {
 		var strs []string
 		out, err := exec.Command("9", "bullshit").CombinedOutput()
 		if err != nil {
