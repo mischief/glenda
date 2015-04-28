@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ type Bot struct {
 	IrcConfig irc.Config
 	Mods      map[string]Module
 	Magic     string
+	DataDir   string
 
 	LoginFn   func(conn *irc.Conn, line irc.Line)
 	PrivmsgFn func(conn *irc.Conn, line irc.Line)
@@ -194,6 +196,7 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 	channelss := c.Search("channels")
 	moduless := c.Search("modules")
 	magics := c.Search("magic")
+	datadirs := c.Search("datadir")
 
 	conf := irc.Config{
 		Host:      hosts,
@@ -237,6 +240,12 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 		b.Magic = magics
 	} else {
 		b.Magic = "."
+	}
+
+	if datadirs != "" {
+		b.DataDir = datadirs
+	} else {
+		b.DataDir = os.ExpandEnv("${HOME}/.glenda")
 	}
 
 	return conf, nil
