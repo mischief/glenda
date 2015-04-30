@@ -341,8 +341,12 @@ func (m *MarkovMod) Init(b *Bot, conn irc.SafeConn) error {
 
 	m.chain = c
 
+	generate := func() string {
+		return m.chain.Generate(rand.Intn(10)+10)
+	}
+
 	b.Hook("markov", func(b *Bot, sender, cmd string, args ...string) error {
-		b.Conn.Privmsg(sender, m.chain.Generate(rand.Intn(10)+10))
+		b.Conn.Privmsg(sender, generate())
 		return nil
 	})
 
@@ -351,7 +355,26 @@ func (m *MarkovMod) Init(b *Bot, conn irc.SafeConn) error {
 			return
 		}
 
-		m.chain.Build(strings.NewReader(l.Args[1]))
+		getAddressee := func(line string) string {
+			if s := strings.SplitN(line, " ", 2); len(s) == 2 {
+
+				t := rune(s[0][len(s[0]) - 1])
+
+				if strings.ContainsRune(":,", t) {
+					return s[0][:len(s[0]) - 1]
+				}
+			}
+
+			return ""
+		}
+
+		if addressee := getAddressee(l.Args[1]); addressee != "" {
+			if addressee == c.Me().String() {
+				c.Privmsg(l.Args[0], generate())
+			}
+		} else {
+			m.chain.Build(strings.NewReader(l.Args[1]))
+		}
 	})
 
 	log.Printf("markov module initialized")
