@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"math/rand"
-	"net/http"
 	"path/filepath"
 	"strings"
 
