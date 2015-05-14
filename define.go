@@ -39,7 +39,7 @@ type DefineMod struct {
 func (d *DefineMod) Init(b *Bot, conn irc.SafeConn) error {
 
 	b.Hook("define", func(b *Bot, sender, cmd string, args ...string) error {
-		b.Conn.Privmsg(sender, d.define(strings.Join(args, " ")))
+		b.Conn.Privmsg(sender, d.define(strings.Join(args, "+")))
 		return nil
 	})
 
