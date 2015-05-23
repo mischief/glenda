@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
 )
 
 func init() {
@@ -39,7 +40,19 @@ type DefineMod struct {
 func (d *DefineMod) Init(b *Bot, conn irc.SafeConn) error {
 
 	b.Hook("define", func(b *Bot, sender, cmd string, args ...string) error {
-		b.Conn.Privmsg(sender, d.define(strings.Join(args, "+")))
+
+		var (
+			i = 0
+			err error
+		)
+
+		if len(args) > 1 {
+			if i, err = strconv.Atoi(args[len(args) - 1]); err == nil {
+				args = args[:len(args) - 1]
+			}
+		}
+
+		b.Conn.Privmsg(sender, d.define(strings.Join(args, "+"), i))
 		return nil
 	})
 
@@ -47,7 +60,7 @@ func (d *DefineMod) Init(b *Bot, conn irc.SafeConn) error {
 	return nil
 }
 
-func (d *DefineMod) define(word string) string {
+func (d *DefineMod) define(word string, i int) string {
 	var definition UrbanWord
 	var body []byte
 
@@ -69,7 +82,12 @@ func (d *DefineMod) define(word string) string {
 	}
 
 	if len(definition.List) > 0 {
-		return fmt.Sprintf("%s: %s", word, definition.List[0].Definition)
+
+		if i >= len(definition.List) || i < 0 {
+			i = 0
+		}
+
+		return fmt.Sprintf("%s [%d/%d]: %s", word, i, len(definition.List) - 1, definition.List[i].Definition)
 	} else {
 		return fmt.Sprintf("%s: not found.", word)
 	}
