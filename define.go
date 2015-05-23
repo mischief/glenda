@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -42,13 +42,13 @@ func (d *DefineMod) Init(b *Bot, conn irc.SafeConn) error {
 	b.Hook("define", func(b *Bot, sender, cmd string, args ...string) error {
 
 		var (
-			i = 0
+			i   = 0
 			err error
 		)
 
 		if len(args) > 1 {
-			if i, err = strconv.Atoi(args[len(args) - 1]); err == nil {
-				args = args[:len(args) - 1]
+			if i, err = strconv.Atoi(args[len(args)-1]); err == nil {
+				args = args[:len(args)-1]
 			}
 		}
 
@@ -87,7 +87,7 @@ func (d *DefineMod) define(word string, i int) string {
 			i = 0
 		}
 
-		return fmt.Sprintf("%s [%d/%d]: %s", word, i, len(definition.List) - 1, strings.Replace(definition.List[i].Definition, "\r\n", " ", -1))
+		return fmt.Sprintf("%s [%d/%d]: %s", word, i, len(definition.List)-1, strings.Replace(definition.List[i].Definition, "\r\n", " ", -1))
 	} else {
 		return fmt.Sprintf("%s: not found.", word)
 	}
