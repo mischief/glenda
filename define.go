@@ -87,7 +87,7 @@ func (d *DefineMod) define(word string, i int) string {
 			i = 0
 		}
 
-		return fmt.Sprintf("%s [%d/%d]: %s", word, i, len(definition.List) - 1, definition.List[i].Definition)
+		return fmt.Sprintf("%s [%d/%d]: %s", word, i, len(definition.List) - 1, strings.Replace(definition.List[i].Definition, "\r\n", " ", -1))
 	} else {
 		return fmt.Sprintf("%s: not found.", word)
 	}
