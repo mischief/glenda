@@ -1,23 +1,18 @@
+// +build ignore
+
 package main
 
 import (
 	"fmt"
-	"github.com/SlyMarbo/rss"
-	"github.com/kballard/goirc/irc"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/SlyMarbo/rss"
+	"github.com/kballard/goirc/irc"
 )
 
 var shorten = false
-
-func init() {
-	RegisterModule("feedreader", func() Module {
-		return &FeedReaderMod{}
-	})
-}
-
-// this all sucks. fix me.
 
 // maps a feed to a set of channels to send feed results to
 type feedspitter struct {
@@ -186,13 +181,5 @@ func (f *FeedReaderMod) Init(b *Bot, conn irc.SafeConn) (err error) {
 
 	log.Printf("feedreader module initialized")
 
-	return nil
-}
-
-func (f *FeedReaderMod) Reload() error {
-	return nil
-}
-
-func (f *FeedReaderMod) Call(args ...string) error {
 	return nil
 }

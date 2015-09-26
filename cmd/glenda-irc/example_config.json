@@ -1,0 +1,10 @@
+{
+	"name": "offblast",
+	"host": "irc.offblast.org",
+	"port": 6697,
+	"ssl": true,
+	"nick": "glenda-2",
+	"user": "glenda",
+	"real": "glenda",
+	"channels": ["#programming"]
+}

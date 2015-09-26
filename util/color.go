@@ -1,6 +1,6 @@
-package main
+package util
 
-func Colored(val string, color string) string {
+func IrcColor(val string, color string) string {
 	// 00 white 01 black 02 blue (navy) 03 green 04 red 05 brown (maroon)
 	// 06 purple 07 orange (olive) 08 yellow 09 light green (lime)
 	// 10 teal (a green/blue cyan) 11 light cyan (cyan) (aqua) 12 light blue (royal)

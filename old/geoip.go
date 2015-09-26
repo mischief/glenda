@@ -19,6 +19,23 @@ func init() {
 //{"ip":"76.126.11.172","country_code":"US","country_name":"United States",
 // "region_code":"CA","region_name":"California","city":"San Francisco",
 // "zipcode":"94110","latitude":37.7484,"longitude":-122.4156,"metro_code":"807","areacode":"415"}
+
+/*
+{
+    "city": "San Francisco",
+    "country_code": "US",
+    "country_name": "United States",
+    "ip": "192.30.252.131",
+    "latitude": 37.77,
+    "longitude": -122.394,
+    "metro_code": 807,
+    "region_code": "CA",
+    "region_name": "California",
+    "time_zone": "America/Los_Angeles",
+    "zip_code": "94107"
+}
+
+*/
 type FreeGeoip struct {
 	Ip           string
 	Country_code string
@@ -29,7 +46,7 @@ type FreeGeoip struct {
 	Zipcode      string
 	Latitude     float64
 	Longitude    float64
-	Metro_code   string
+	Metro_code   float64
 	Areacode     string
 }
 

@@ -1,0 +1,10 @@
+{
+	"feeds": [
+		{
+			"name": "reddit",
+			"url": "https://reddit.com/feed/blah.atom",
+			"channels": ["#feed"],
+			"color": "red"
+		}
+	]
+}
