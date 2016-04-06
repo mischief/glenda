@@ -1,7 +1,7 @@
 package main
 
 import (
-	urlshortener "code.google.com/p/google-api-go-client/urlshortener/v1"
+	urlshortener "google.golang.org/api/urlshortener/v1"
 	"fmt"
 	"github.com/kballard/goirc/irc"
 	"log"
