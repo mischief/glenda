@@ -127,56 +127,54 @@ func (f *FeedReaderMod) Init(b *Bot, conn irc.SafeConn) (err error) {
 	}
 
 	for _, rec := range conf {
-		for _, line := range rec {
-			var url string
-			var channels []string
-			var freqs string
-			var name string
-			var color string
+		var url string
+		var channels []string
+		var freqs string
+		var name string
+		var color string
 
-			for _, tup := range line {
-				if tup.Attr == "feed" {
-					url = tup.Val
-				}
-				if tup.Attr == "channels" {
-					channels = strings.Fields(tup.Val)
-				}
-				if tup.Attr == "freq" {
-					freqs = tup.Val
-				}
-				if tup.Attr == "color" {
-					color = tup.Val
-				}
-				if tup.Attr == "name" {
-					name = tup.Val
-				}
+		for _, tup := range rec {
+			if tup.Attr == "feed" {
+				url = tup.Val
 			}
+			if tup.Attr == "channels" {
+				channels = strings.Fields(tup.Val)
+			}
+			if tup.Attr == "freq" {
+				freqs = tup.Val
+			}
+			if tup.Attr == "color" {
+				color = tup.Val
+			}
+			if tup.Attr == "name" {
+				name = tup.Val
+			}
+		}
 
-			if url != "" && channels != nil && len(channels) > 0 {
-				// allow frequency to be unset; this means use the rss reader default
-				var freq time.Duration
-				if freqs != "" {
-					pfreq, err := time.ParseDuration(freqs)
-					if err != nil {
-						log.Printf("%s skipped: %s", url, err)
-						continue
-					}
-					freq = pfreq
-				}
-
-				if color == "" {
-					color = "white"
-				}
-
-				fs, err := newfeedsplitter(conn, url, name, color, freq, channels)
+		if url != "" && channels != nil && len(channels) > 0 {
+			// allow frequency to be unset; this means use the rss reader default
+			var freq time.Duration
+			if freqs != "" {
+				pfreq, err := time.ParseDuration(freqs)
 				if err != nil {
 					log.Printf("%s skipped: %s", url, err)
 					continue
 				}
-
-				f.feeds[url] = fs
-				log.Printf("added feed %s", url)
+				freq = pfreq
 			}
+
+			if color == "" {
+				color = "white"
+			}
+
+			fs, err := newfeedsplitter(conn, url, name, color, freq, channels)
+			if err != nil {
+				log.Printf("%s skipped: %s", url, err)
+				continue
+			}
+
+			f.feeds[url] = fs
+			log.Printf("added feed %s", url)
 		}
 	}
 
