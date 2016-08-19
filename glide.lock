@@ -1,0 +1,66 @@
+hash: c66ae8c4383eb3d210acb9ad324a90a51a3af8b444f2589bde29a5ee1bc3db64
+updated: 2016-08-19T01:25:51.452692769-07:00
+imports:
+- name: github.com/axgle/mahonia
+  version: c528b747d92d41ca581a7acf3e604c396fc7c034
+- name: github.com/boltdb/bolt
+  version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
+- name: github.com/golang/protobuf
+  version: f592bd283e9ef86337a432eb50e592278c3d534d
+  subpackages:
+  - proto
+- name: github.com/golang/time
+  version: a4bde12657593d5e90d0533a3e4fd95e635124cb
+  subpackages:
+  - rate
+- name: github.com/jmcvetta/randutil
+  version: 2bb1b664bcff821e02b2a0644cd29c7e824d54f8
+- name: github.com/kballard/gocallback
+  version: bbde943d8d1b8947d5001b0bba714be8dc9cd2e6
+  subpackages:
+  - callback
+- name: github.com/kballard/goirc
+  version: c21191ad1dbf107c8988dbf388d0beb94ec54fb2
+  subpackages:
+  - irc
+- name: github.com/luksen/maildir
+  version: 5297d9c3091c7d4891c9d4f6fa743d500c038d6f
+- name: github.com/mattn/go-sqlite3
+  version: 3b3f1d01b2696af5501697c35629048c227586ab
+- name: github.com/mischief/ndb
+  version: a27299009a4024367a9dd7427259f7e36459d07a
+- name: github.com/robfig/cron
+  version: b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4
+- name: github.com/SlyMarbo/rss
+  version: 2972ff7dace9d6bc893fc093f5e7c9ca1aace789
+- name: golang.org/x/net
+  version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: golang.org/x/oauth2
+  version: 3b966c7f301c0c71c53d94dc632a62df0a682cd7
+  subpackages:
+  - internal
+- name: golang.org/x/sys
+  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  subpackages:
+  - unix
+- name: google.golang.org/api
+  version: 71d10c782fc13eb9f2e2c9af553da218c941851f
+  subpackages:
+  - urlshortener/v1
+  - gensupport
+  - googleapi
+  - googleapi/internal/uritemplates
+- name: google.golang.org/appengine
+  version: e951d3868b377b14f4e60efa3a301532ee3c1ebf
+  subpackages:
+  - urlfetch
+  - internal
+  - internal/urlfetch
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+testImports: []
