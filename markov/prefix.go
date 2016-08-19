@@ -1,8 +1,6 @@
 package markov
 
 import (
-	"bytes"
-	"io"
 	"strings"
 )
 
@@ -27,7 +25,5 @@ func (p Prefix) Shift(word string) {
 
 // convert prefix into a byte array for db
 func (p Prefix) Key() []byte {
-	buf := new(bytes.Buffer)
-	io.WriteString(buf, strings.Join(p, " "))
-	return buf.Bytes()
+	return []byte(p.String())
 }
