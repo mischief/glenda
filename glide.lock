@@ -1,5 +1,5 @@
 hash: 8dfae753dc095dd3da6ce88d87441c4f225cf92d0fe410abe15aa983ff70faa6
-updated: 2016-08-19T01:30:12.136168116-07:00
+updated: 2016-08-19T02:29:46.491924669-07:00
 imports:
 - name: github.com/axgle/mahonia
   version: c528b747d92d41ca581a7acf3e604c396fc7c034
@@ -13,6 +13,8 @@ imports:
   version: a4bde12657593d5e90d0533a3e4fd95e635124cb
   subpackages:
   - rate
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmcvetta/randutil
   version: 2bb1b664bcff821e02b2a0644cd29c7e824d54f8
 - name: github.com/kballard/gocallback
@@ -35,6 +37,8 @@ imports:
   version: 2972ff7dace9d6bc893fc093f5e7c9ca1aace789
 - name: github.com/spf13/cobra
   version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
+- name: github.com/spf13/pflag
+  version: 4f9190456aed1c2113ca51ea9b89219747458dc1
 - name: golang.org/x/net
   version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
   subpackages:
