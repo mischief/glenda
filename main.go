@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/time/rate"
 	"github.com/kballard/goirc/irc"
 	"github.com/mischief/ndb"
 )
@@ -33,6 +34,8 @@ type Bot struct {
 	LoginFn   func(conn *irc.Conn, line irc.Line)
 	PrivmsgFn func(conn *irc.Conn, line irc.Line)
 	ActionFn  func(conn *irc.Conn, line irc.Line)
+
+	ratelimit map[string]*rate.Limiter
 
 	hooks map[string]HookFn
 
@@ -88,6 +91,13 @@ func NewBot(conf string) (*Bot, error) {
 			sender = l.Args[0]
 		} else {
 			sender = l.Src.String()
+		}
+
+		if limiter, ok := bot.ratelimit[l.Args[0]]; ok {
+			if !limiter.Allow() {
+				log.Printf(`rate limiting`)
+				return
+			}
 		}
 
 		if err := hk(bot, sender, cmd, args...); err != nil {
@@ -185,6 +195,9 @@ func (b *Bot) Reload() error {
 
 func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 	var err error
+	var limits, bursts string
+	var limit float64
+	var burst int64
 
 	hosts := c.Search("host")
 	ports := c.Search("port")
@@ -225,6 +238,29 @@ func (b *Bot) parseconfig(c ndb.RecordSet) (irc.Config, error) {
 	}
 
 	b.Channels = strings.Split(channelss, " ")
+
+	b.ratelimit = make(map[string]*rate.Limiter)
+	limits = c.Search("ratelimit_rate")
+	if limits == "" {
+		limits = "1"
+	}
+
+	bursts = c.Search("ratelimit_burst")
+	if bursts == "" {
+		bursts = "1"
+	}
+
+	limit, err = strconv.ParseFloat(limits, 64)
+	if err != nil {
+		goto badconf
+	}
+	burst, err = strconv.ParseInt(bursts, 10, 64)
+	if err != nil {
+		goto badconf
+	}
+	for _, c := range b.Channels {
+		b.ratelimit[c] = rate.NewLimiter(rate.Limit(limit), int(burst))
+	}
 
 	if mods := strings.Split(moduless, " "); len(mods) > 0 {
 		for _, m := range mods {
