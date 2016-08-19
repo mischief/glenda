@@ -1,5 +1,5 @@
-hash: c66ae8c4383eb3d210acb9ad324a90a51a3af8b444f2589bde29a5ee1bc3db64
-updated: 2016-08-19T01:25:51.452692769-07:00
+hash: 8dfae753dc095dd3da6ce88d87441c4f225cf92d0fe410abe15aa983ff70faa6
+updated: 2016-08-19T01:30:12.136168116-07:00
 imports:
 - name: github.com/axgle/mahonia
   version: c528b747d92d41ca581a7acf3e604c396fc7c034
@@ -33,6 +33,8 @@ imports:
   version: b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4
 - name: github.com/SlyMarbo/rss
   version: 2972ff7dace9d6bc893fc093f5e7c9ca1aace789
+- name: github.com/spf13/cobra
+  version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
 - name: golang.org/x/net
   version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
   subpackages:

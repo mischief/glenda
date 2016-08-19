@@ -14,7 +14,13 @@ import (
 	"github.com/golang/time/rate"
 	"github.com/kballard/goirc/irc"
 	"github.com/mischief/ndb"
+	"github.com/spf13/cobra"
 )
+
+var root = &cobra.Command{
+	Use:  "glenda",
+	RunE: runGlenda,
+}
 
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -303,20 +309,20 @@ var (
 	configfile = flag.String("conf", "config/main", "path to ndb(6)-format config file")
 )
 
-func main() {
-	var err error
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	flag.Parse()
-
+func runGlenda(cmd *cobra.Command, args []string) error {
 	bot, err := NewBot(*configfile)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if bot != nil {
-		log.Fatal(bot.Run())
+	return bot.Run()
+}
+
+func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
 	}
 }

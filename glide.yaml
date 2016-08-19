@@ -20,3 +20,4 @@ import:
 - package: google.golang.org/api
   subpackages:
   - urlshortener/v1
+- package: github.com/spf13/cobra
