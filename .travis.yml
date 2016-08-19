@@ -1,0 +1,20 @@
+language: go
+
+go:
+  - 1.5.4
+  - 1.6.3
+  - 1.7
+  - tip
+
+env:
+  global:
+    - GO15VENDOREXPERIMENT=1
+
+sudo: false
+
+before_install:
+  - go get -v github.com/Masterminds/glide
+
+script:
+  - make test
+
