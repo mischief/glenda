@@ -1,10 +1,24 @@
-hash: 8dfae753dc095dd3da6ce88d87441c4f225cf92d0fe410abe15aa983ff70faa6
-updated: 2016-08-19T02:29:46.491924669-07:00
+hash: ffa804b67140755170f50bcdd9454f0dc7392297ed979060623da8bed2e78a04
+updated: 2016-08-20T08:34:59.754931721-07:00
 imports:
 - name: github.com/axgle/mahonia
   version: c528b747d92d41ca581a7acf3e604c396fc7c034
 - name: github.com/boltdb/bolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
+- name: github.com/BurntSushi/toml
+  version: 99064174e013895bbd9b025c31100bd1d9b590ca
+- name: github.com/fluffle/goirc
+  version: 20e4ea9b00de09f043d5e6fac9f135cd2a509572
+  subpackages:
+  - client
+  - state
+  - logging
+- name: github.com/fsnotify/fsnotify
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
+- name: github.com/golang/mock
+  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  subpackages:
+  - gomock
 - name: github.com/golang/protobuf
   version: f592bd283e9ef86337a432eb50e592278c3d534d
   subpackages:
@@ -13,6 +27,17 @@ imports:
   version: a4bde12657593d5e90d0533a3e4fd95e635124cb
   subpackages:
   - rate
+- name: github.com/hashicorp/hcl
+  version: d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/token
+  - json/parser
+  - hcl/scanner
+  - hcl/strconv
+  - json/scanner
+  - json/token
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmcvetta/randutil
@@ -25,25 +50,61 @@ imports:
   version: c21191ad1dbf107c8988dbf388d0beb94ec54fb2
   subpackages:
   - irc
+- name: github.com/kr/fs
+  version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
 - name: github.com/luksen/maildir
   version: 5297d9c3091c7d4891c9d4f6fa743d500c038d6f
+- name: github.com/magiconair/properties
+  version: 61b492c03cf472e0c6419be5899b8e0dc28b1b88
 - name: github.com/mattn/go-sqlite3
   version: 3b3f1d01b2696af5501697c35629048c227586ab
+- name: github.com/mischief/glenda
+  version: 14d9afc86c9c70814db26b4e01fb1d1e5e4d6596
+  subpackages:
+  - markov
 - name: github.com/mischief/ndb
   version: a27299009a4024367a9dd7427259f7e36459d07a
+- name: github.com/mitchellh/mapstructure
+  version: ca63d7c062ee3c9f34db231e352b60012b4fd0c1
+- name: github.com/nlopes/slack
+  version: b7940f209838f93dc7ab0d823145513c9660f22a
+- name: github.com/pkg/errors
+  version: a22138067af1c4942683050411a841ade67fe1eb
+- name: github.com/pkg/sftp
+  version: a71e8f580e3b622ebff585309160b1cc549ef4d2
 - name: github.com/robfig/cron
   version: b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4
 - name: github.com/SlyMarbo/rss
   version: 2972ff7dace9d6bc893fc093f5e7c9ca1aace789
+- name: github.com/spf13/afero
+  version: b28a7effac979219c2a2ed6205a4d70e4b1bcd02
+  subpackages:
+  - mem
+  - sftp
+- name: github.com/spf13/cast
+  version: e31f36ffc91a2ba9ddb72a4b6a607ff9b3d3cb63
 - name: github.com/spf13/cobra
   version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
+- name: github.com/spf13/jwalterweatherman
+  version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
 - name: github.com/spf13/pflag
   version: 4f9190456aed1c2113ca51ea9b89219747458dc1
+- name: github.com/spf13/viper
+  version: fe9c8b59e176537a2a08498fe6a5e131a3b6a304
+- name: golang.org/x/crypto
+  version: 88d0005bf4c3ec17306ecaca4281a8d8efd73e91
+  subpackages:
+  - ssh
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
 - name: golang.org/x/net
   version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
   subpackages:
+  - websocket
   - context
   - context/ctxhttp
+  - proxy
 - name: golang.org/x/oauth2
   version: 3b966c7f301c0c71c53d94dc632a62df0a682cd7
   subpackages:
@@ -52,6 +113,11 @@ imports:
   version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
   subpackages:
   - unix
+- name: golang.org/x/text
+  version: d69c40b4be55797923cec7457fac7a244d91a9b6
+  subpackages:
+  - transform
+  - unicode/norm
 - name: google.golang.org/api
   version: 71d10c782fc13eb9f2e2c9af553da218c941851f
   subpackages:
@@ -69,4 +135,6 @@ imports:
   - internal/datastore
   - internal/log
   - internal/remote_api
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 testImports: []

@@ -21,3 +21,5 @@ import:
   subpackages:
   - urlshortener/v1
 - package: github.com/spf13/cobra
+- package: github.com/nlopes/slack
+- package: github.com/spf13/viper

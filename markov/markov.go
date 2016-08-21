@@ -72,6 +72,11 @@ func NewChain(dbpath string) (*Chain, error) {
 	return c, nil
 }
 
+func (c *Chain) Close() error {
+	c.prefixes = map[string]bool{}
+	return c.db.Close()
+}
+
 func (c *Chain) upgram(pre Prefix, suf *Suffix) error {
 	k := pre.Key()
 	v := suf.Value()
